@@ -1,4 +1,6 @@
 import math
+import numpy as np
+import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="다기능 계산기", page_icon="🧮")
@@ -17,6 +19,7 @@ operation = st.radio(
         "모듈러 연산 (a % b)",
         "지수 연산 (a^b)",
         "로그 연산 (log₍base₎(value))",
+        "다항함수 그래프",
     ),
 )
 
@@ -104,4 +107,70 @@ elif operation == "로그 연산 (log₍base₎(value))":
             except Exception as e:
                 st.error(f"에러가 발생했습니다: {e}")
 
+# 다항함수 그래프
+elif operation == "다항함수 그래프":
+    st.subheader("다항함수 그래프 그리기")
 
+    st.markdown(
+        """
+        - 계수는 **최고차항부터** 차례대로 입력하세요.  
+        - 예: `1, -3, 2` → \( f(x) = 1x^2 - 3x + 2 \)
+        """
+    )
+
+    coeff_text = st.text_input(
+        "계수 목록 (쉼표로 구분해서 입력)",
+        value="1, -3, 2",
+    )
+
+    x_min = st.number_input("x 최소값", value=-10.0)
+    x_max = st.number_input("x 최대값", value=10.0)
+    num_points = st.slider("그래프를 위한 x 샘플 개수", 50, 1000, 400, 50)
+
+    if st.button("그래프 그리기"):
+        # x 범위 체크
+        if x_min >= x_max:
+            st.error("x 최소값은 최대값보다 작아야 합니다.")
+        else:
+            try:
+                # 계수 파싱
+                coeffs = [
+                    float(c.strip())
+                    for c in coeff_text.split(",")
+                    if c.strip() != ""
+                ]
+                if not coeffs:
+                    st.error("최소 하나 이상의 계수를 입력해야 합니다.")
+                else:
+                    # 다항식 객체 생성
+                    p = np.poly1d(coeffs)
+
+                    # x, y 값 계산
+                    xs = np.linspace(x_min, x_max, num_points)
+                    ys = p(xs)
+
+                    # 다항식 식 보여주기
+                    degree = len(coeffs) - 1
+                    terms = []
+                    for i, c in enumerate(coeffs):
+                        power = degree - i
+                        if abs(c) < 1e-12:
+                            continue
+                        if power == 0:
+                            term = f"{c}"
+                        elif power == 1:
+                            term = f"{c}x"
+                        else:
+                            term = f"{c}x^{power}"
+                        terms.append(term)
+                    poly_str = " + ".join(terms).replace("+ -", "- ")
+
+                    st.write(f"**f(x) = {poly_str}**")
+
+                    # 그래프 그리기
+                    df = pd.DataFrame({"x": xs, "f(x)": ys})
+                    st.line_chart(df, x="x", y="f(x)")
+            except ValueError:
+                st.error("계수는 숫자로만 입력해야 합니다. (예: 1, -3, 2)")
+            except Exception as e:
+                st.error(f"에러가 발생했습니다: {e}")
