@@ -67,5 +67,41 @@ elif operation == "모듈러 연산 (a % b)":
 elif operation == "지수 연산 (a^b)":
     st.subheader("지수 연산 (a^b)")
     a = st.number_input("밑 a", value=2.0)
-    b = st.number_input("지_
+    b = st.number_input("지수 b", value=2.0)
+
+    if st.button("계산하기"):
+        try:
+            result = a ** b
+            st.success(f"결과: {result}")
+        except Exception as e:
+            st.error(f"에러가 발생했습니다: {e}")
+
+# 로그 연산
+elif operation == "로그 연산 (log₍base₎(value))":
+    st.subheader("로그 연산")
+    # log는 0보다 커야 해서 아주 작은 양수부터 입력 가능하게 설정
+    value = st.number_input(
+        "로그를 취할 값 (value, 0보다 커야 함)",
+        value=1.0,
+        min_value=1e-9,
+        format="%.6f",
+    )
+    base = st.number_input(
+        "밑 (base, 0보다 크고 1이 아니어야 함)",
+        value=10.0,
+        min_value=1e-9,
+        format="%.6f",
+    )
+
+    if st.button("계산하기"):
+        if base == 1:
+            st.error("base 는 1이 될 수 없습니다.")
+        else:
+            try:
+                # log_base(value) = ln(value) / ln(base)
+                result = math.log(value) / math.log(base)
+                st.success(f"결과: log₍{base}₎({value}) = {result}")
+            except Exception as e:
+                st.error(f"에러가 발생했습니다: {e}")
+
 
